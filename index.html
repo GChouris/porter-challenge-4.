@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Porter Challenge — Ταξινόμησε τις 5 δυνάμεις</title>
+<style>
+:root{--navy:#183153;--blue:#2457a7;--bg:#f3f6fb;--ink:#202a38;--muted:#596579;--green:#18794e;--red:#b42318;--border:#d7deea}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.45}
+header{background:linear-gradient(120deg,#183153,#2457a7);color:white;text-align:center;padding:25px 16px}header h1{margin:0;font-size:clamp(1.65rem,4vw,2.5rem)}header p{margin:7px 0 0}
+main{max-width:1250px;margin:20px auto;padding:0 14px 32px}.panel{background:white;border-radius:16px;padding:18px;box-shadow:0 4px 18px #172b4d10;margin-bottom:17px}
+h2{color:var(--navy);margin:0 0 8px;font-size:1.3rem}.muted{color:var(--muted)}.introline{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pill{background:#e8eef9;color:var(--navy);padding:5px 11px;border-radius:99px;font-size:.9rem;font-weight:bold}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 15px;font-weight:bold}
+.primary{background:var(--blue);color:#fff}.secondary{background:#e9edf4;color:var(--navy)}button:disabled{opacity:.45;cursor:not-allowed}
+.progress{height:8px;background:#e7ecf4;border-radius:99px;overflow:hidden;margin:12px 0}.bar{height:100%;width:0;background:#27835d;transition:width .2s}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.card{background:#fff;border:1px solid var(--border);border-left:5px solid #7b91b7;border-radius:12px;padding:12px 13px;cursor:grab;box-shadow:0 2px 7px #1b31500a;min-height:82px}
+.card:active{cursor:grabbing}.card.selected{outline:3px solid #78a2ed;background:#edf4ff}.card.correct{border-left-color:var(--green);background:#edfaf2}.card.incorrect{border-left-color:var(--red);background:#fff0ef}.card small{display:block;color:var(--muted);margin-top:7px}
+.board{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:10px;align-items:stretch}
+.zone{border:2px dashed #c5d0e1;background:#f9fbff;border-radius:13px;min-height:190px;padding:10px;transition:.15s}
+.zone h3{font-size:1rem;color:var(--navy);margin:2px 0 8px}.zone .hint{font-size:.8rem;color:var(--muted);margin-bottom:9px}.zone.over{border-color:var(--blue);background:#edf4ff}.zone .card{margin-bottom:8px;min-height:0;cursor:pointer}
+.zone .card small{display:none}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.feedback{display:none;border-radius:11px;padding:12px 14px;margin-top:14px}.feedback.show{display:block}.feedback.good{background:#e9f7ef;color:#155d3b}.feedback.bad{background:#fff0ee;color:#8c211a}
+.score{font-weight:bold;color:var(--navy)}.hidden{display:none!important}
+footer{text-align:center;color:var(--muted);padding:8px 15px 22px;font-size:.9rem}
+@media(max-width:1000px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.board{grid-template-columns:1fr}.zone{min-height:100px}.panel{padding:14px}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>Porter Challenge</h1>
+<p>Ταξινόμησε τα επιχειρηματικά στοιχεία στις 5 δυνάμεις του Porter</p>
+<p style="font-size:.92rem;opacity:.9">Marketing Lab · Διαδραστική εκπαιδευτική άσκηση</p>
+</header>
+<main>
+<section class="panel">
+<div class="introline"><h2>Η αποστολή σου</h2><span class="pill">15 κάρτες · 5 δυνάμεις</span></div>
+<p>Σύρε κάθε κάρτα στη δύναμη του Porter στην οποία ανήκει. Σε κινητό ή tablet, πάτησε πρώτα την κάρτα και μετά την κατηγορία προορισμού. Όταν ολοκληρώσεις την ταξινόμηση, πάτησε <b>Έλεγχος απαντήσεων</b>.</p>
+<div class="introline"><p class="muted" style="margin:0">Στόχος: να αναγνωρίζεις ποια πηγή ανταγωνιστικής πίεσης περιγράφει κάθε παράδειγμα.</p><span class="score" id="score">Σωστές: 0 / 15</span></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+</section>
+<section class="panel">
+<h2>Κάρτες προς ταξινόμηση</h2>
+<div id="cards" class="cards"></div>
+<div class="actions"><button class="primary" id="check">Έλεγχος απαντήσεων</button><button class="secondary" id="reset">Ξεκίνα ξανά</button></div>
+<div id="feedback" class="feedback" aria-live="polite"></div>
+</section>
+<section class="panel">
+<h2>Οι πέντε δυνάμεις</h2>
+<p class="muted">Άφησε κάθε κάρτα στην κατάλληλη περιοχή. Οι κάρτες παραμένουν μετακινήσιμες μέχρι να ελέγξεις τις απαντήσεις.</p>
+<div id="board" class="board"></div>
+</section>
+</main>
+<footer>Σχεδιασμός και εκπαιδευτική επιμέλεια: Γιώργος Χούρης · Marketing Lab</footer>
+<script>
+const forces=[
+{title:"1. Ένταση ανταγωνισμού",sub:"Μεταξύ υπαρχουσών επιχειρήσεων"},
+{title:"2. Απειλή νέων ανταγωνιστών",sub:"Εμπόδια εισόδου στον κλάδο"},
+{title:"3. Απειλή υποκατάστατων",sub:"Άλλες λύσεις για την ίδια ανάγκη"},
+{title:"4. Δύναμη πελατών",sub:"Διαπραγματευτική δύναμη αγοραστών"},
+{title:"5. Δύναμη προμηθευτών",sub:"Διαπραγματευτική δύναμη προμηθευτών"}
+];
+const data=[
+{text:"Πολλά καταστήματα καφέ προσφέρουν παρόμοια προϊόντα και ανταγωνίζονται με συνεχείς εκπτώσεις.",answer:0,why:"Η πίεση προέρχεται από τις ήδη υπάρχουσες επιχειρήσεις που διεκδικούν την ίδια πελατεία."},
+{text:"Για να ιδρυθεί νέα αεροπορική εταιρεία απαιτούνται πολύ μεγάλο κεφάλαιο και αυστηρές εγκρίσεις.",answer:1,why:"Το κεφάλαιο και οι απαιτούμενες εγκρίσεις είναι υψηλά εμπόδια εισόδου και περιορίζουν την απειλή νέων παικτών."},
+{text:"Όταν ακριβαίνουν τα εισιτήρια του κινηματογράφου, οι πελάτες επιλέγουν μια πλατφόρμα streaming στο σπίτι.",answer:2,why:"Το streaming καλύπτει την ίδια βασική ανάγκη ψυχαγωγίας με διαφορετικό τρόπο, άρα είναι υποκατάστατο."},
+{text:"Οι πελάτες συγκρίνουν τιμές τηλεοράσεων σε ιστοσελίδες και αγοράζουν εύκολα από το φθηνότερο κατάστημα.",answer:3,why:"Η εύκολη σύγκριση τιμών και η δυνατότητα αλλαγής καταστήματος ενισχύουν τη διαπραγματευτική δύναμη των πελατών."},
+{text:"Ένας κατασκευαστής υπολογιστών εξαρτάται από λίγους προμηθευτές για κρίσιμους επεξεργαστές.",answer:4,why:"Οι λίγοι διαθέσιμοι προμηθευτές και η κρίσιμη σημασία του εξαρτήματος ενισχύουν τη δύναμή τους."},
+{text:"Σε μια ώριμη αγορά σούπερ μάρκετ, οι αλυσίδες ανταγωνίζονται με προσφορές, φυλλάδια και κουπόνια.",answer:0,why:"Οι επιχειρήσεις που ήδη δραστηριοποιούνται στον κλάδο προσπαθούν επιθετικά να κερδίσουν ή να διατηρήσουν πελάτες."},
+{text:"Ένα απλό ηλεκτρονικό κατάστημα μπορεί να ξεκινήσει με σχετικά μικρό κεφάλαιο και βασική τεχνογνωσία.",answer:1,why:"Τα χαμηλά εμπόδια εισόδου διευκολύνουν την είσοδο νέων ανταγωνιστών."},
+{text:"Οι επιβάτες επιλέγουν αυτοκίνητο ή αεροπλάνο αντί για τρένο, όταν τους εξυπηρετεί περισσότερο.",answer:2,why:"Το αυτοκίνητο και το αεροπλάνο μπορούν να καλύψουν την ίδια ανάγκη μετακίνησης με το τρένο."},
+{text:"Ένας μεγάλος εταιρικός πελάτης αντιστοιχεί στο 35% των πωλήσεων μιας επιχείρησης και απαιτεί χαμηλότερη τιμή.",answer:3,why:"Ο πελάτης έχει ισχυρή θέση διαπραγμάτευσης λόγω του μεγάλου όγκου αγορών του."},
+{text:"Ένα αρτοποιείο μπορεί να αλλάξει εύκολα προμηθευτή αλεύρου, επειδή υπάρχουν πολλοί μύλοι στην αγορά.",answer:4,why:"Η ύπαρξη πολλών εναλλακτικών προμηθευτών μειώνει τη δύναμη κάθε μεμονωμένου προμηθευτή."},
+{text:"Οι εταιρείες κινητής τηλεφωνίας προσφέρουν διαρκώς φθηνότερα πακέτα για να κερδίσουν πελάτες από τους ανταγωνιστές τους.",answer:0,why:"Πρόκειται για έντονο ανταγωνισμό μεταξύ επιχειρήσεων που ήδη δραστηριοποιούνται στον κλάδο."},
+{text:"Οι καταναλωτές εμπιστεύονται ήδη γνωστές μάρκες και διστάζουν να δοκιμάσουν μια νέα, άγνωστη εταιρεία.",answer:1,why:"Η αναγνωρισιμότητα και η πιστότητα σε υπάρχουσες μάρκες λειτουργούν ως εμπόδιο για νέους ανταγωνιστές."},
+{text:"Για επαγγελματικές συναντήσεις, μια εταιρεία χρησιμοποιεί τηλεδιάσκεψη αντί να πληρώνει αεροπορικά εισιτήρια και ξενοδοχεία.",answer:2,why:"Η τηλεδιάσκεψη υποκαθιστά την ανάγκη για επαγγελματικό ταξίδι και διαμονή."},
+{text:"Οι πελάτες μιας αγοράς είναι λίγοι, καλά ενημερωμένοι και μπορούν να μεταφέρουν τις αγορές τους σε άλλο προμηθευτή χωρίς κόστος.",answer:3,why:"Λίγοι μεγάλοι και ενημερωμένοι αγοραστές με χαμηλό κόστος αλλαγής έχουν ισχυρή διαπραγματευτική δύναμη."},
+{text:"Μια πρώτη ύλη είναι μοναδική και απαραίτητη, ενώ η επιχείρηση θα δυσκολευόταν πολύ να βρει εναλλακτικό προμηθευτή.",answer:4,why:"Η κρίσιμη πρώτη ύλη και η έλλειψη εναλλακτικών αυξάνουν τη διαπραγματευτική δύναμη του προμηθευτή."}
+];
+let placements={},selected=null,checked=false,order=[];
+const $=id=>document.getElementById(id);
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function build(){
+ placements={};selected=null;checked=false;order=shuffle(data.map((_,i)=>i));
+ $("cards").innerHTML="";$("board").innerHTML="";$("feedback").className="feedback";$("feedback").textContent="";$("score").textContent=`Σωστές: 0 / ${data.length}`;$("bar").style.width="0%";
+ forces.forEach((f,i)=>{let z=document.createElement("div");z.className="zone";z.dataset.force=i;z.innerHTML=`<h3>${f.title}</h3><div class="hint">${f.sub}<br>Ρίξε εδώ την κάρτα</div>`;z.ondragover=e=>{if(!checked){e.preventDefault();z.classList.add("over")}};z.ondragleave=()=>z.classList.remove("over");z.ondrop=e=>{e.preventDefault();z.classList.remove("over");if(!checked)place(Number(e.dataTransfer.getData("text/plain")),i)};z.onclick=()=>{if(selected!==null&&!checked)place(selected,i)};$("board").appendChild(z)});
+ order.forEach(i=>{let c=document.createElement("div");c.className="card";c.draggable=true;c.tabIndex=0;c.dataset.card=i;c.innerHTML=`${data[i].text}<small>Πάτησε για επιλογή ή σύρε στην κατηγορία</small>`;c.ondragstart=e=>{if(!checked)e.dataTransfer.setData("text/plain",String(i))};c.onclick=()=>{if(checked)return;selected=i;document.querySelectorAll(".card").forEach(x=>x.classList.remove("selected"));c.classList.add("selected");c.setAttribute("aria-pressed","true")};c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();c.click()}};$("cards").appendChild(c)});
+}
+function place(card,force){placements[card]=force;selected=null;const c=document.querySelector(`[data-card="${card}"]`);const z=document.querySelector(`.zone[data-force="${force}"]`);c.classList.remove("selected");c.setAttribute("aria-pressed","false");z.appendChild(c);$("feedback").className="feedback";$("feedback").textContent=""}
+function check(){checked=true;let correct=0;data.forEach((d,i)=>{const c=document.querySelector(`[data-card="${i}"]`);if(placements[i]===d.answer){correct++;c.classList.add("correct")}else{c.classList.add("incorrect");if(placements[i]===undefined){c.style.outline="2px solid #b42318"}}c.draggable=false});$("score").textContent=`Σωστές: ${correct} / ${data.length}`;$("bar").style.width=`${correct/data.length*100}%`;let fb=$("feedback");fb.className="feedback show "+(correct===data.length?"good":"bad");fb.innerHTML=`<strong>${correct===data.length?"Άψογα! Όλες οι κάρτες είναι σωστά ταξινομημένες.":`Έχεις ${correct} σωστές ταξινομήσεις στις ${data.length}.`}</strong><br><br>`+data.map((d,i)=>`${i+1}. <b>${forces[d.answer].title}</b> — ${d.why}`).join("<br><br>");document.querySelectorAll(".zone").forEach(z=>z.ondrop=null)}
+$("check").onclick=check;$("reset").onclick=build;build();
+</script>
+</body></html>
